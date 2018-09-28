@@ -1,0 +1,28 @@
+extends: airbnb
+parser: babel-eslint
+plugins:
+  - node
+env:
+  node: true
+settings:
+  import/resolver:
+    node:
+      moduleDirectory:
+        - node_modules
+        - src/
+rules:
+  no-console:
+    - never
+  import/no-unresolved:
+    - error
+  import/extensions:
+    - off
+    - never
+  indent:
+    - error
+    - tab
+    - SwitchCase: 1
+  max-len: [error, 120]
+  no-tabs: 'off'
+  react/jsx-filename-extension: 'off'
+  react/jsx-indent-props: [error, tab]

@@ -1,7 +1,7 @@
-import TimelyAPI from '../../client';
 import moment from 'moment';
 import inquirer from 'inquirer';
 import fuzzy from 'fuzzy';
+import TimelyAPI from '../../client';
 
 module.exports = {
 	command: 'create [note] [duration] [date]',
@@ -10,22 +10,18 @@ module.exports = {
 	handler: async (args) => {
 		TimelyAPI.authenticate().then(async () => {
 			TimelyAPI.getProjects().then((projects) => {
-				const list = projects.map((project) =>
-					project.name);
+				const list = projects.map(project => project.name);
 				inquirer.prompt([
 					{
 						type: 'autocomplete',
 						name: 'projectName',
 						message: 'Choose a project',
-						source: function (answers, input) {
+						source(answers, input) {
 							const search = input || '';
 							return new Promise((resolve) => {
 								const results = fuzzy.filter(search, list);
 								return resolve(results.map(result => result.string));
 							});
-						},
-						transformer: function (projectName) {
-							return
 						},
 					}, {
 						type: 'input',
@@ -47,13 +43,29 @@ module.exports = {
 						name: 'date',
 						message: 'Date of the entry?',
 						when: ({ timer }) => !args.date && !timer,
-						default: moment().format(moment.HTML5_FMT.DATE), list
-					}]).then(({ projectName, note, timer, duration, date }) => {
+						default: moment().format(moment.HTML5_FMT.DATE),
+						list,
+					}]).then(
+					(
+						{
+							projectName,
+							note,
+							timer,
+							duration,
+							date,
+						},
+					) => {
 						const projectId = projects.filter(project => project.name === projectName)[0].id;
 						const durationTime = duration ? duration.split(':', 2) : [];
-						TimelyAPI.createEvent(projectId, date, durationTime[1] || 0, durationTime[0] || 0, note).then((event) => {
+						TimelyAPI.createEvent(
+							projectId,
+							date,
+							durationTime[1] || 0,
+							durationTime[0] || 0,
+							note,
+						).then((event) => {
 							if (timer) {
-								TimelyAPI.startTimer(event.id).then((event) => {
+								TimelyAPI.startTimer(event.id).then(() => {
 									console.log('Timer started for', projectName);
 								}).catch((error) => {
 									console.log('Whoops, we created a event but not a timer!', error);
@@ -64,44 +76,9 @@ module.exports = {
 						}).catch((error) => {
 							console.log('whooppss somethin went wrong...', error);
 						});
-					}).catch((error) => console.log('error', error));
+					},
+				).catch(error => console.log('error', error));
 			});
 		});
-	}
+	},
 };
-
-/*
-app
-	.command('entries list [date] [enddate]', 'Show entries of a specific date or range. defaults to today.')
-	.action(function (args, callback) {
-		let date = new Date();
-		if (args.date) {
-			date = chrono.parseDate(args.date);
-		}
-
-		if (!date) {
-			console.log(`We tried hard but ${args.date} is an invalid date.`);
-			return callback();
-		}
-		TimelyAPI.getEntries(date).then((entries) => {
-			if (!entries.length) {
-				console.log('There are no entries for', moment(date).format(moment.HTML5_FMT.DATE));
-				return callback();
-			}
-			let table = new CLITable({
-				head: ['Note', 'Time', 'Project'],
-			});
-
-			Object.values(entries).forEach((entry) => {
-				table.push([
-					entry.note,
-					entry.duration.formatted,
-					entry.project.name,
-				]);
-			});
-
-			console.log(table.toString());
-			callback();
-		});
-	});
-*/

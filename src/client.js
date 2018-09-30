@@ -1,10 +1,6 @@
-import OAuthClient from 'simple-oauth2';
 import storage from 'node-persist';
-import { EventEmitter } from 'events';
-import { URL } from 'url';
 import inquirer from 'inquirer';
-import { api } from './http';
-import moment, { relativeTimeThreshold } from 'moment';
+import moment from 'moment';
 
 import TimelyAPI from './providers/timely-api';
 
@@ -47,7 +43,7 @@ class Client {
 				if (!this.account) {
 					this.selectAccount().then(() => {
 						resolve(this.account);
-					}).catch((error) => reject(error));
+					}).catch(error => reject(error));
 				} else {
 					resolve(this.account);
 				}
@@ -56,22 +52,20 @@ class Client {
 				console.log('Login with Timely: ', api.authorizeURL());
 				inquirer.prompt([{
 					name: 'authCode',
-					message: 'Authorization code: '
+					message: 'Authorization code: ',
 				}]).then(({ authCode }) => {
 					api.authorize(authCode).then((tokens) => {
 						this.saveTokens(tokens);
 						this.selectAccount().then((account) => {
 							resolve(account);
 						});
-					}).catch((error) => {
-						reject(error);
-					})
+					}).catch(reject);
 				});
 			});
 		});
 	}
 
-	async logout() {
+	logout = async () => {
 		storage.clear();
 	}
 
@@ -80,7 +74,7 @@ class Client {
 		return new Promise((resolve, reject) => {
 			api.getAccounts().then((accounts) => {
 				console.log('accounts', accounts);
-				const choices = Object.values(accounts).map((account) => ({
+				const choices = Object.values(accounts).map(account => ({
 					name: account.name,
 					value: account.id,
 				}));
@@ -90,9 +84,7 @@ class Client {
 					message: 'Select a account to use',
 					choices,
 				}).then(({ accountId }) => {
-					const account = accounts.filter((account) => {
-						return account.id === accountId;
-					})[0];
+					const account = accounts.filter(item => item.id === accountId)[0];
 					this.saveAccount(account);
 
 					resolve(account);
@@ -117,13 +109,13 @@ class Client {
 				this.timerId = event.id;
 				resolve(event);
 			}).catch(reject);
-		})
+		});
 	}
 
 	getTimer() {
 		return new Promise((resolve, reject) => {
 			this.api.getEvents(this.account.id).then((events) => {
-				const timers = events.filter((event) => event.timer_state === 'start');
+				const timers = events.filter(event => event.timer_state === 'start');
 				console.log(timers);
 				if (timers.length > 0) {
 					this.timerId = timers[0].id;
@@ -132,7 +124,7 @@ class Client {
 					reject(new Error('No timer found'));
 				}
 			}).catch((error) => {
-				reject(error)
+				reject(error);
 			});
 		});
 	}
@@ -140,9 +132,9 @@ class Client {
 	stopTimer() {
 		return new Promise((resolve, reject) => {
 			this.getTimer().then((event) => {
-				this.api.stopTimer(this.account.id, event.id).then((event) => {
+				this.api.stopTimer(this.account.id, event.id).then((result) => {
 					this.timerId = undefined;
-					resolve(event);
+					resolve(result);
 				}).catch(reject);
 			}).catch(reject);
 		});
@@ -152,10 +144,8 @@ class Client {
 		return this.api.createEvent(this.account.id, projectId, day, minutes, hours, note);
 	}
 
-	getEvents(date = null, endDate = null) {
-		return new Promise((resolve, reject) => {
-			return this.api.getEvents(this.account.id, date || moment().format(moment.HTML5_FMT.DATE));
-		});
+	getEvents(date = null) {
+		return this.api.getEvents(this.account.id, date || moment().format(moment.HTML5_FMT.DATE));
 	}
 }
 

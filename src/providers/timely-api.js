@@ -1,7 +1,7 @@
 import OAuthClient from 'simple-oauth2';
 import { URL } from 'url';
+import moment from 'moment';
 import { api } from '../http';
-import moment, { relativeTimeThreshold } from 'moment';
 
 const TIMELY_API_HOST = 'https://api.timelyapp.com/1.1/';
 
@@ -49,13 +49,10 @@ class TimelyAPI {
 			this.setTokens(tokens);
 
 			if (this.accessTokens.expired()) {
-				this.accessTokens.refresh().then((tokens) => {
-					console.log('refresh', tokens);
-					this.setTokens(tokens);
-					resolve(tokens);
-				}).catch((error) => {
-					reject(error);
-				});
+				this.accessTokens.refresh().then((refreshedTokens) => {
+					this.setTokens(refreshedTokens);
+					resolve(refreshedTokens);
+				}).catch(reject);
 			} else {
 				resolve(tokens);
 			}
@@ -82,9 +79,7 @@ class TimelyAPI {
 			}).then((tokens) => {
 				this.setTokens(tokens);
 				resolve(tokens);
-			}).catch((error) => {
-				reject(error);
-			});
+			}).catch(reject);
 		});
 	}
 
@@ -93,27 +88,23 @@ class TimelyAPI {
 	 *
 	 * @returns {Promise}
 	 */
-	getAccounts() {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const { data: accounts } = await api.get('/accounts');
-				resolve(accounts);
-			} catch (error) {
-				reject(error);
-			}
-		});
-	}
+	getAccounts = () => new Promise(async (resolve, reject) => {
+		try {
+			const { data: accounts } = await api.get('/accounts');
+			resolve(accounts);
+		} catch (error) {
+			reject(error);
+		}
+	});
 
-	getUser(accountId, id = 'current') {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const { data: user } = await api.get(`/${accountId}/users/${id}`);
-				resolve(user);
-			} catch (error) {
-				reject(error);
-			}
-		});
-	}
+	getUser = (accountId, id = 'current') => new Promise(async (resolve, reject) => {
+		try {
+			const { data: user } = await api.get(`/${accountId}/users/${id}`);
+			resolve(user);
+		} catch (error) {
+			reject(error);
+		}
+	});
 
 	setTokens(tokens) {
 		this.accessTokens = this.auth.accessToken.create(tokens);
@@ -121,84 +112,76 @@ class TimelyAPI {
 	}
 
 
-	getProjects(accountId) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const { data: projects } = await api.get(`/${accountId}/projects`);
-				resolve(projects);
-			} catch (error) {
-				reject(error);
-			}
-		});
-	}
+	getProjects = accountId => new Promise(async (resolve, reject) => {
+		try {
+			const { data: projects } = await api.get(`/${accountId}/projects`);
+			resolve(projects);
+		} catch (error) {
+			reject(error);
+		}
+	});
 
-	getEvents(accountId, date = undefined, endDate = null) {
-		return new Promise(async (resolve, reject) => {
-			const day = date ? moment(date).format(moment.HTML5_FMT.DATE) :
-				moment().format(moment.HTML5_FMT.DATE);
-			try {
-				if (!endDate) {
-					const { data: events } = await api.get(`/${accountId}/events`, {
-						params: {
-							day: moment(date).format(moment.HTML5_FMT.DATE),
-						},
-					});
-					resolve(events);
-				} else {
-					const { data: events } = await api.get(`/${accountId}/events`, {
-						params: {
-							since: moment(date).format(moment.HTML5_FMT.DATE),
-							upto: moment(endDate).format(moment.HTML5_FMT.DATE),
-						},
-					});
-					resolve(events);
-				}
-			} catch (error) {
-				reject(error);
-			}
-		});
-	}
-
-	createEvent(accountId, projectId, day = undefined, minutes = 0, hours = 0, note = undefined) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const { data: event } = await api.post(`/${accountId}/projects/${projectId}/events`, {
-					event: {
-						day: moment(day).format(moment.HTML5_FMT.DATE),
-						minutes: Number.parseInt(minutes, 10),
-						hours: Number.parseInt(hours, 10),
-						note
-					}
+	getEvents = (
+		accountId, date = undefined, endDate = null,
+	) => new Promise(async (resolve, reject) => {
+		try {
+			if (!endDate) {
+				const { data: events } = await api.get(`/${accountId}/events`, {
+					params: {
+						day: moment(date).format(moment.HTML5_FMT.DATE),
+					},
 				});
-
-				resolve(event);
-			} catch (error) {
-				reject(error);
+				resolve(events);
+			} else {
+				const { data: events } = await api.get(`/${accountId}/events`, {
+					params: {
+						since: moment(date).format(moment.HTML5_FMT.DATE),
+						upto: moment(endDate).format(moment.HTML5_FMT.DATE),
+					},
+				});
+				resolve(events);
 			}
-		});
-	}
+		} catch (error) {
+			reject(error);
+		}
+	});
 
-	startTimer(accountId, eventId) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const { data: event } = api.put(`/${accountId}/events/${eventId}/start`);
-				return event;
-			} catch (error) {
-				reject(error);
-			}
-		});
-	}
+	createEvent = (
+		accountId, projectId, day = undefined, minutes = 0, hours = 0, note = undefined,
+	) => new Promise(async (resolve, reject) => {
+		try {
+			const { data: event } = await api.post(`/${accountId}/projects/${projectId}/events`, {
+				event: {
+					day: moment(day).format(moment.HTML5_FMT.DATE),
+					minutes: Number.parseInt(minutes, 10),
+					hours: Number.parseInt(hours, 10),
+					note,
+				},
+			});
 
-	stopTimer(accountId, eventId) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const { data: event } = api.put(`/${accountId}/events/${eventId}/stop`);
-				return event;
-			} catch (error) {
-				reject(error);
-			}
-		});
-	}
+			resolve(event);
+		} catch (error) {
+			reject(error);
+		}
+	});
+
+	startTimer = (accountId, eventId) => new Promise(async (resolve, reject) => {
+		try {
+			const { data: event } = await api.put(`/${accountId}/events/${eventId}/start`);
+			return event;
+		} catch (error) {
+			return reject(error);
+		}
+	});
+
+	stopTimer = (accountId, eventId) => new Promise(async (resolve, reject) => {
+		try {
+			const { data: event } = await api.put(`/${accountId}/events/${eventId}/stop`);
+			return event;
+		} catch (error) {
+			return reject(error);
+		}
+	});
 }
 
 export default TimelyAPI;

@@ -2,7 +2,7 @@ module.exports = {
 	command: 'projects',
 	describe: 'The accounts projects',
 	builder: {},
-	handler: function (args) {
+	handler() {
 		console.log('Hello World.');
-	}
+	},
 };

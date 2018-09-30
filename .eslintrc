@@ -1,0 +1,22 @@
+{
+	"extends": "airbnb-base",
+	"rules": {
+		"indent": [
+			"error",
+			"tab",
+			{
+				"FunctionDeclaration": {
+					"parameters": "first",
+					"body": 1
+				},
+				"FunctionExpression": {
+					"parameters": "first",
+					"body": 1
+				}
+			}
+		],
+		"no-tabs": "off",
+		"no-console": "off"
+	},
+	"parser": "babel-eslint"
+}

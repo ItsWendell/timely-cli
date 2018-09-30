@@ -18,5 +18,5 @@ module.exports = {
 			return;
 		}
 		console.log(await storage.values(), await storage.keys());
-	}
+	},
 };

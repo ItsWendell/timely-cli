@@ -16,7 +16,7 @@ module.exports = {
 		if (!date) {
 			console.log(`We tried hard but ${args.date} is an invalid date.`);
 		}
-		TimelyAPI.getEntries(date).then((entries) => {
+		TimelyAPI.getEvents(date).then((entries) => {
 			if (!entries.length) {
 				console.log('There are no entries for', moment(date).format(moment.HTML5_FMT.DATE));
 			}

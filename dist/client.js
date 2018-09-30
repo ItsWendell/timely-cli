@@ -64,6 +64,7 @@ var Client = function () {
 		this.tokens = {};
 		this.account = null;
 		this.accounts = {};
+		this.timerId = null;
 	}
 
 	(0, _createClass3.default)(Client, [{
@@ -239,8 +240,53 @@ var Client = function () {
 		}
 	}, {
 		key: 'startTimer',
-		value: function startTimer(eventId) {
-			return this.api.startTimer(this.account.id, eventId);
+		value: function startTimer() {
+			var _this3 = this;
+
+			var eventId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
+
+			return new _promise2.default(function (resolve, reject) {
+				_this3.api.startTimer(_this3.account.id, eventId || _this3.timerId).then(function (event) {
+					_this3.timerId = event.id;
+					resolve(event);
+				}).catch(reject);
+			});
+		}
+	}, {
+		key: 'getTimer',
+		value: function getTimer() {
+			var _this4 = this;
+
+			return new _promise2.default(function (resolve, reject) {
+				_this4.api.getEvents(_this4.account.id).then(function (events) {
+					var timers = events.filter(function (event) {
+						return event.timer_state === 'start';
+					});
+					console.log(timers);
+					if (timers.length > 0) {
+						_this4.timerId = timers[0].id;
+						resolve(timers[0]);
+					} else {
+						reject(new Error('No timer found'));
+					}
+				}).catch(function (error) {
+					reject(error);
+				});
+			});
+		}
+	}, {
+		key: 'stopTimer',
+		value: function stopTimer() {
+			var _this5 = this;
+
+			return new _promise2.default(function (resolve, reject) {
+				_this5.getTimer().then(function (event) {
+					_this5.api.stopTimer(_this5.account.id, event.id).then(function (event) {
+						_this5.timerId = undefined;
+						resolve(event);
+					}).catch(reject);
+				}).catch(reject);
+			});
 		}
 	}, {
 		key: 'createEvent',
@@ -251,6 +297,18 @@ var Client = function () {
 			var note = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : undefined;
 
 			return this.api.createEvent(this.account.id, projectId, day, minutes, hours, note);
+		}
+	}, {
+		key: 'getEvents',
+		value: function getEvents() {
+			var _this6 = this;
+
+			var date = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+			var endDate = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
+			return new _promise2.default(function (resolve, reject) {
+				return _this6.api.getEvents(_this6.account.id, date || (0, _moment2.default)().format(_moment2.default.HTML5_FMT.DATE));
+			});
 		}
 	}]);
 	return Client;

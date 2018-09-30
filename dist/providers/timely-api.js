@@ -32,10 +32,6 @@ var _simpleOauth = require('simple-oauth2');
 
 var _simpleOauth2 = _interopRequireDefault(_simpleOauth);
 
-var _nodePersist = require('node-persist');
-
-var _nodePersist2 = _interopRequireDefault(_nodePersist);
-
 var _url = require('url');
 
 var _http = require('../http');
@@ -83,6 +79,13 @@ var TimelyAPI = function () {
 				redirect_uri: this.redirectUri
 			});
 		}
+
+		/**
+   * Authenticate with specific accessTokens.
+   *
+   * @param {Object} tokens
+   */
+
 	}, {
 		key: 'authenticate',
 		value: function authenticate(tokens) {
@@ -109,6 +112,11 @@ var TimelyAPI = function () {
 				}
 			});
 		}
+
+		/**
+   * Removes saved accessToken in the session.
+   */
+
 	}, {
 		key: 'logout',
 		value: function () {
@@ -117,12 +125,9 @@ var TimelyAPI = function () {
 					while (1) {
 						switch (_context.prev = _context.next) {
 							case 0:
-								_nodePersist2.default.clear();
-								this.setAccountId(null);
-								this.setProjectId(null);
 								this.accessTokens = null;
 
-							case 4:
+							case 1:
 							case 'end':
 								return _context.stop();
 						}
@@ -136,6 +141,13 @@ var TimelyAPI = function () {
 
 			return logout;
 		}()
+
+		/**
+   * Authorize with a authentication code.
+   *
+   * @param {String} code
+   */
+
 	}, {
 		key: 'authorize',
 		value: function authorize(code) {
@@ -153,6 +165,13 @@ var TimelyAPI = function () {
 				});
 			});
 		}
+
+		/**
+   * Returns all accounts connected to user of current class.
+   *
+   * @returns {Promise}
+   */
+
 	}, {
 		key: 'getAccounts',
 		value: function getAccounts() {
@@ -295,75 +314,77 @@ var TimelyAPI = function () {
 		}
 	}, {
 		key: 'getEvents',
-		value: function getEvents(accountId, date) {
+		value: function getEvents(accountId) {
 			var _this6 = this;
 
+			var date = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
 			var endDate = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
 			return new _promise2.default(function () {
 				var _ref8 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee5(resolve, reject) {
-					var _ref9, events, _ref10, _events;
+					var day, _ref9, events, _ref10, _events;
 
 					return _regenerator2.default.wrap(function _callee5$(_context5) {
 						while (1) {
 							switch (_context5.prev = _context5.next) {
 								case 0:
-									_context5.prev = 0;
+									day = date ? (0, _moment2.default)(date).format(_moment2.default.HTML5_FMT.DATE) : (0, _moment2.default)().format(_moment2.default.HTML5_FMT.DATE);
+									_context5.prev = 1;
 
 									if (endDate) {
-										_context5.next = 9;
+										_context5.next = 10;
 										break;
 									}
 
-									_context5.next = 4;
-									return _http.api.get('/' + _this6.account.id + '/events', {
+									_context5.next = 5;
+									return _http.api.get('/' + accountId + '/events', {
 										params: {
 											day: (0, _moment2.default)(date).format(_moment2.default.HTML5_FMT.DATE)
 										}
 									});
 
-								case 4:
+								case 5:
 									_ref9 = _context5.sent;
 									events = _ref9.data;
 
 									resolve(events);
-									_context5.next = 14;
+									_context5.next = 15;
 									break;
 
-								case 9:
-									_context5.next = 11;
-									return _http.api.get('/' + _this6.account.id + '/events', {
+								case 10:
+									_context5.next = 12;
+									return _http.api.get('/' + accountId + '/events', {
 										params: {
 											since: (0, _moment2.default)(date).format(_moment2.default.HTML5_FMT.DATE),
 											upto: (0, _moment2.default)(endDate).format(_moment2.default.HTML5_FMT.DATE)
 										}
 									});
 
-								case 11:
+								case 12:
 									_ref10 = _context5.sent;
 									_events = _ref10.data;
 
 									resolve(_events);
 
-								case 14:
-									_context5.next = 19;
+								case 15:
+									_context5.next = 20;
 									break;
 
-								case 16:
-									_context5.prev = 16;
-									_context5.t0 = _context5['catch'](0);
+								case 17:
+									_context5.prev = 17;
+									_context5.t0 = _context5['catch'](1);
 
 									reject(_context5.t0);
 
-								case 19:
+								case 20:
 								case 'end':
 									return _context5.stop();
 							}
 						}
-					}, _callee5, _this6, [[0, 16]]);
+					}, _callee5, _this6, [[1, 17]]);
 				}));
 
-				return function (_x10, _x11) {
+				return function (_x11, _x12) {
 					return _ref8.apply(this, arguments);
 				};
 			}());
@@ -421,7 +442,7 @@ var TimelyAPI = function () {
 					}, _callee6, _this7, [[0, 8]]);
 				}));
 
-				return function (_x16, _x17) {
+				return function (_x17, _x18) {
 					return _ref11.apply(this, arguments);
 				};
 			}());
@@ -457,8 +478,44 @@ var TimelyAPI = function () {
 					}, _callee7, _this8, [[0, 5]]);
 				}));
 
-				return function (_x18, _x19) {
+				return function (_x19, _x20) {
 					return _ref13.apply(this, arguments);
+				};
+			}());
+		}
+	}, {
+		key: 'stopTimer',
+		value: function stopTimer(accountId, eventId) {
+			var _this9 = this;
+
+			return new _promise2.default(function () {
+				var _ref14 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee8(resolve, reject) {
+					var _api$put2, event;
+
+					return _regenerator2.default.wrap(function _callee8$(_context8) {
+						while (1) {
+							switch (_context8.prev = _context8.next) {
+								case 0:
+									_context8.prev = 0;
+									_api$put2 = _http.api.put('/' + accountId + '/events/' + eventId + '/stop'), event = _api$put2.data;
+									return _context8.abrupt('return', event);
+
+								case 5:
+									_context8.prev = 5;
+									_context8.t0 = _context8['catch'](0);
+
+									reject(_context8.t0);
+
+								case 8:
+								case 'end':
+									return _context8.stop();
+							}
+						}
+					}, _callee8, _this9, [[0, 5]]);
+				}));
+
+				return function (_x21, _x22) {
+					return _ref14.apply(this, arguments);
 				};
 			}());
 		}

@@ -138,14 +138,14 @@ class TimelyAPI {
 				moment().format(moment.HTML5_FMT.DATE);
 			try {
 				if (!endDate) {
-					const { data: events } = await api.get(`/${this.account.id}/events`, {
+					const { data: events } = await api.get(`/${accountId}/events`, {
 						params: {
 							day: moment(date).format(moment.HTML5_FMT.DATE),
 						},
 					});
 					resolve(events);
 				} else {
-					const { data: events } = await api.get(`/${this.account.id}/events`, {
+					const { data: events } = await api.get(`/${accountId}/events`, {
 						params: {
 							since: moment(date).format(moment.HTML5_FMT.DATE),
 							upto: moment(endDate).format(moment.HTML5_FMT.DATE),
@@ -189,7 +189,7 @@ class TimelyAPI {
 		});
 	}
 
-	startTimer(accountId, eventId) {
+	stopTimer(accountId, eventId) {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const { data: event } = api.put(`/${accountId}/events/${eventId}/stop`);

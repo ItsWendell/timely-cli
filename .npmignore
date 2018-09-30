@@ -1,0 +1,8 @@
+/meta
+/src
+/test
+/coverage
+/.travis.yml
+/appveyor.yml
+jsconfig.json
+travis_after_all.py

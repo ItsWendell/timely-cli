@@ -123,9 +123,10 @@ class Client {
 	getTimer() {
 		return new Promise((resolve, reject) => {
 			this.api.getEvents(this.account.id).then((events) => {
-				const timers = events.filter((event) => event.timer_state === 'timer_state');
+				const timers = events.filter((event) => event.timer_state === 'start');
+				console.log(timers);
 				if (timers.length > 0) {
-					this.timerId = timders[0].id;
+					this.timerId = timers[0].id;
 					resolve(timers[0]);
 				} else {
 					reject(new Error('No timer found'));
@@ -153,8 +154,8 @@ class Client {
 
 	getEvents(date = null, endDate = null) {
 		return new Promise((resolve, reject) => {
-			return this.api.getEvents(this.account.id, date || )
-		})
+			return this.api.getEvents(this.account.id, date || moment().format(moment.HTML5_FMT.DATE));
+		});
 	}
 }
 

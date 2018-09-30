@@ -1,11 +1,13 @@
-import inquirer from 'inquirer';
-import app from '../app';
 import TimelyAPI from '../client';
-import Command from './command';
 
-export default new Command('accounts', 'Select a account for current session', () => { }, () => {
-	TimelyAPI.selectAccount();
-});
+module.exports = {
+	command: 'accounts',
+	describe: 'Select a account for current session',
+	builder: {},
+	hanlder: () => {
+		TimelyAPI.selectAccount();
+	},
+};
 
 /*
 app

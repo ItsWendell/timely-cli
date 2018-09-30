@@ -22,6 +22,6 @@ initialize().then(() => {
 		.alias('h', 'help')
 		.epilog('Timely CLI - No more excuses!')
 		.commandDir('commands')
-		.demandCommand()
-		.argv();
+		.demandCommand();
+	return yargs.argv;
 });

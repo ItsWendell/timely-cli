@@ -9,7 +9,7 @@ export default axios;
  * Create a preconfigured axios instance to use in all api calls.
  */
 export const api = axios.create({
-	baseURL: process.env.TIMELY_API_HOST,
+	baseURL: process.env.TIMELY_API_HOST || 'https://api.timelyapp.com/1.1/',
 });
 
 /**
